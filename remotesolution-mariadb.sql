@@ -8,7 +8,25 @@ USE thingspin;
 -- 제품 모델 Table
 CREATE TABLE if not exists t_model (
 	MODEL_ID 	varchar(32)		NOT NULL PRIMARY KEY,
+	DESCRIPTION	nvarchar(128)	NOT NULL,
+	REGDATE		TIMESTAMP		NULL DEFAULT CURRENT_TIMESTAMP
+);
+-- 지사 Table
+CREATE TABLE if not exists t_plant (
+	PLANT_ID 	varchar(32)		NOT NULL PRIMARY KEY,
 	DESCRIPTION	nvarchar(128)	NOT NULL
+);
+insert into t_plant values ('1000', '한국');
+-- 생산계획 Table
+CREATE TABLE t_product_plan
+(
+	PLAN_DATE		date			NOT NULL,
+    PLANT_ID  		varchar(32)	    NOT NULL,
+    MODEL_ID     	varchar(32)     NOT NULL, 
+    AMOUNT   	  	INT           	NOT NULL,
+    PRIMARY KEY (PLAN_DATE, PLANT_ID, MODEL_ID),
+    FOREIGN KEY (PLANT_ID) REFERENCES t_plant(PLANT_ID) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  	FOREIGN KEY (MODEL_ID) REFERENCES t_model(MODEL_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 -- 검사 항목 Table
 CREATE TABLE if not exists t_inspection_property (
