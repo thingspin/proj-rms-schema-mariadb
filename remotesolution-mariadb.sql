@@ -224,7 +224,18 @@ CREATE TABLE t_shipper_receiver
 	FOREIGN KEY (CONSUMABLES_ID) REFERENCES t_consumables(CONSUMABLES_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
+-- 모델 스펙
+CREATE TABLE if not exists t_model_spec
+(
+	ID 		varchar(32)	NOT NULL PRIMARY KEY,
 
+	IP_JSON			JSON		NOT NULL,
+	
+	DESCRIPTION		TEXT		NULL,
+	REGDATE 		TIMESTAMP	DEFAULT CURRENT_TIMESTAMP,
+
+	FOREIGN KEY(ID)	REFERENCES t_model(MODEL_ID)
+);
 /*====================================================================*/
 /* Remote Solution ThingSPIN 관리 Table 생성 */
 /*====================================================================*/
