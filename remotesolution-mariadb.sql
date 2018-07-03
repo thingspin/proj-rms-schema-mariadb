@@ -26,7 +26,7 @@ CREATE TABLE if not exists t_plant (
 	PLANT_ID 	varchar(32)		NOT NULL PRIMARY KEY,
 	DESCRIPTION	nvarchar(128)	NOT NULL
 );
-insert into t_plant values ('1000', '한국');
+insert into t_plant values ('1000', '한국')  ON DUPLICATE KEY UPDATE PLANT_ID='1000';
 -- 생산계획 Table
 CREATE TABLE t_product_plan
 (
@@ -53,6 +53,8 @@ CREATE TABLE if not exists t_inspection_property (
 	REGDATE 					TIMESTAMP		DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY(IP_TYPE)	REFERENCES t_inspection_class(IDX)
 );
+/* IDX 강제 할당 안됨 */
+insert into t_inspection_property (IDX, NAME, IP_TYPE, DEFAULT_MIN, DEFAULT_MAX, DEFAULT_CPK_MIN, DEFAULT_CPK_MAX) values (0,'ALL',1,0,0,0,0)  ON DUPLICATE KEY UPDATE NAME='ALL';
 -- 모델별 조치기준
 CREATE TABLE if not exists t_model_inspection_property (
 	INSPECTION_PROPERTY_INDEX	SMALLINT		NOT NULl,
@@ -63,7 +65,55 @@ CREATE TABLE if not exists t_model_inspection_property (
 	PRIMARY KEY(INSPECTION_PROPERTY_INDEX),
 	FOREIGN KEY(INSPECTION_PROPERTY_INDEX)	REFERENCES t_inspection_property(IDX)
 );
+-- 감지 조건 Table
+CREATE TABLE if not exists t_perception_condition (
+	IDX			SMALLINT		NOT NULL PRIMARY KEY,
+	NAME		NVARCHAR(64)	NOT NULL,
 
+	DESCRIPTION	nvarchar(128)	NULL,
+	REGDATE 	TIMESTAMP		DEFAULT CURRENT_TIMESTAMP
+);
+insert into t_perception_condition (IDX, NAME, DESCRIPTION) values (1, "연속불량", "지정한 횟수만큼 불량을 체크") ON DUPLICATE KEY UPDATE NAME="연속불량";
+insert into t_perception_condition (IDX, NAME, DESCRIPTION) values (2, "CPK", "지정한 범위의 값을 체크") ON DUPLICATE KEY UPDATE NAME="CPK";
+
+-- 조치 Table
+CREATE TABLE if not exists t_action (
+	NAME			NVARCHAR(64)	NOT NULL PRIMARY KEY,
+
+	DESCRIPTION		nvarchar(128)	NULL,
+	REGDATE 		TIMESTAMP		DEFAULT CURRENT_TIMESTAMP
+);
+insert into t_action (NAME, DESCRIPTION) values ("None", "안함") ON DUPLICATE KEY UPDATE DESCRIPTION="안함";
+insert into t_action (NAME, DESCRIPTION) values ("Alarm", "알람") ON DUPLICATE KEY UPDATE DESCRIPTION="알람";
+insert into t_action (NAME, DESCRIPTION) values ("Line Stop", "라인정지") ON DUPLICATE KEY UPDATE DESCRIPTION="라인정지";
+
+-- 검사 종류 Table
+Create Table if not exists t_inspection_type (
+	IDX				SMALLINT		NOT NULL PRIMARY KEY,
+	NAME			NVARCHAR(64)	NOT NULL,
+	DESCRIPTION		nvarchar(128)	NULL,
+	REGDATE 		TIMESTAMP		DEFAULT CURRENT_TIMESTAMP
+);
+insert into t_inspection_type (IDX, NAME) values (1, "PBA검사") ON DUPLICATE KEY UPDATE NAME="PBA검사";
+insert into t_inspection_type (IDX, NAME) values (2, "기능검사") ON DUPLICATE KEY UPDATE NAME="기능검사";
+insert into t_inspection_type (IDX, NAME) values (3, "외관검사") ON DUPLICATE KEY UPDATE NAME="외관검사";
+insert into t_inspection_type (IDX, NAME) values (4, "공정검사") ON DUPLICATE KEY UPDATE NAME="공정검사";
+
+
+-- 사전 조치 Table
+CREATE TABLE if not exists t_action_in_advance (
+	ID 					int 		AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	IP_IDX				SMALLINT	NOT NULL,
+	IT_IDX				SMALLINT	NOT NULL,
+	
+	JSON_DATA			JSON		NOT NULL,
+	
+	DESCRIPTION			TEXT		NULL,
+	REGDATE 			TIMESTAMP	DEFAULT CURRENT_TIMESTAMP,
+
+	FOREIGN KEY(IP_IDX)	REFERENCES t_inspection_property(IDX),
+	FOREIGN KEY(IT_IDX)	REFERENCES t_inspection_type(IDX)
+);
 -- 금형 리스트
 CREATE TABLE t_mold
 (
